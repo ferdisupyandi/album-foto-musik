@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Album Foto dengan Musik - Kustom Lengkap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
+  /* Reset and base */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: linear-gradient(135deg, #1e3c12, #a6d785);
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #f0f9f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    font-weight: 700;
+    font-size: 2.8rem;
+    text-shadow: 0 0 15px #145214;
+    margin: 1rem 0 0.5rem;
+    text-align: center;
+    user-select: none;
+  }
+
+  .album-container {
+    position: relative;
+    width: 90vw;
+    max-width: 700px;
+    background: rgba(255 255 255 / 0.1);
+    border-radius: 20px;
+    box-shadow: 0 0 30px #17691f;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  .image-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  img#photo {
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    display: block;
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+    transition: opacity 0.6s ease-in-out;
+  }
+
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(22,105,31,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #a6d785;
+    font-weight: 700;
+    font-size: 1.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    border-radius: 20px 20px 0 0;
+  }
+  .loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .caption {
+    padding: 1rem 1.2rem;
+    background: rgba(0 0 0 / 0.5);
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    text-shadow: 1px 1px 3px #072004;
+    min-height: 3rem;
+    transition: color 0.3s ease;
+  }
+  .caption[aria-live] {
+    outline: none;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    background: rgba(22 105 31 / 0.9);
+    border-radius: 0 0 20px 20px;
+    box-shadow: inset 0 0 15px #264d0d;
+  }
+
+  button {
+    background-color: #84b466;
+    border: none;
+    color: #fff;
+    padding: 0.7rem 1.4rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 0 12px #4d6b1f;
+    user-select: none;
+  }
+  button:focus {
+    outline: 2px solid #cbedc3;
+    outline-offset: 3px;
+  }
+  button:hover:not(:disabled) {
+    background-color: #5e8a21;
+    box-shadow: 0 0 16px #8bbe3d;
+  }
+  button:disabled {
+    background-color: #4a6830;
+    cursor: default;
+    box-shadow: none;
+  }
+
+  /* Dot indicators */
+  .indicators {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.7rem;
+    gap: 10px;
+    user-select: none;
+  }
+  .indicators button {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    padding: 0;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 4px #a6d785;
+    transition: background-color 0.3s ease;
+  }
+  .indicators button.active {
+    background-color: #c9f49a;
+    box-shadow: 0 0 10px #cdf3a6;
+    cursor: pointer;
+  }
+  .indicators button:focus {
+    outline: 2px solid #cdf3a6;
+    outline-offset: 2px;
+  }
+
+  /* Music player */
+  .music-player {
+    margin-top: 2rem;
+    background: rgba(22, 105, 31, 0.9);
+    padding: 0.8rem 1.2rem;
+    border-radius: 16px;
+    box-shadow: 0 0 25px #264d0d;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    user-select: none;
+    max-width: 700px;
+    width: 90vw;
+  }
+  .music-player audio {
+    outline: none;
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #85b26a;
+    cursor: pointer;
+  }
+  .music-toggle {
+    background-color: #7da850;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 0.5rem 1.2rem;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 0 6px #4f7b1f;
+    transition: background-color 0.3s ease;
+    border: none;
+  }
+  .music-toggle:hover {
+    background-color: #5a7d20;
+  }
+  .music-toggle:focus {
+    outline: 2px solid #cbedc3;
+    outline-offset: 3px;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 2rem;
+    }
+    .album-container {
+      max-width: 95vw;
+    }
+    .music-player {
+      width: 95vw;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .music-toggle {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <h1>Album Foto dengan Musik - Kustom Lengkap</h1>
+
+  <section class="album-container" aria-label="Album foto dengan musik">
+    <div class="image-wrapper">
+      <img id="photo" src="1.jpg" alt="Foto Album" />
+      <div class="loading-overlay" aria-hidden="true" id="loadingOverlay">Memuat...</div>
+    </div>
+    <div class="caption" id="caption" aria-live="polite" aria-atomic="true">Keterangan foto pertama</div>
+    <div class="controls" role="group" aria-label="Kontrol navigasi album">
+      <button id="prevBtn" aria-label="Foto sebelumnya">❮ Sebelumnya</button>
+      <button id="playPauseSlideshow" aria-label="Jeda putar otomatis slideshow">Jeda Slideshow ▐▐</button>
+      <button id="nextBtn" aria-label="Foto berikutnya">Berikutnya ❯</button>
+    </div>
+    <div class="indicators" role="list" aria-label="Indikator foto">
+      <!-- Dots will be injected here by JS -->
+    </div>
+  </section>
+
+  <section class="music-player" aria-label="Pemutar musik latar">
+    <audio id="music" controls loop preload="auto" aria-label="Pemutar musik latar">
+      <source src="cinta-mati-244044.mp3" type="audio/mp3" />
+      Browser Anda tidak mendukung pemutar audio.
+    </audio>
+    <button id="musicToggle" class="music-toggle" aria-pressed="true" aria-label="Jeda/Mulai musik">Jeda Musik ▐▐</button>
+  </section>
+
+  <script>
+    const photos = [
+      { src: "1.jpg", caption: "Keterangan foto pertama" },
+      { src: "4.jpg", caption: "Keterangan foto kedua" },
+      { src: "2.jpg", caption: "Keterangan foto ketiga" }
+      // Tambahkan foto lainnya sesuai kebutuhan
+    ];
+
+    let currentIndex = 0;
+    let slideshowInterval = null;
+    let slideshowPlaying = true;
+
+    const photoElem = document.getElementById('photo');
+    const captionElem = document.getElementById('caption');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const indicatorsContainer = document.querySelector('.indicators');
+    const playPauseSlideshowBtn = document.getElementById('playPauseSlideshow');
+    const musicElem = document.getElementById('music');
+    const musicToggleBtn = document.getElementById('musicToggle');
+
+    // Preload images for smoothness
+    const preloadedImages = [];
+    photos.forEach((photo) => {
+      const img = new Image();
+      img.src = photo.src;
+      preloadedImages.push(img);
+    });
+
+    // Create dot indicators dynamically
+    function createIndicators() {
+      indicatorsContainer.innerHTML = '';
+      photos.forEach((_, idx) => {
+        const dot = document.createElement('button');
+        dot.setAttribute('role', 'listitem');
+        dot.setAttribute('aria-label', `Foto ke-${idx + 1}`);
+        dot.title = `Foto ke-${idx + 1}`;
+        dot.classList.toggle('active', idx === currentIndex);
+        dot.addEventListener('click', () => {
+          stopSlideshow();
+          updatePhoto(idx);
+        });
+        indicatorsContainer.appendChild(dot);
+      });
+    }
+
+    function setActiveIndicator(index) {
+      const dots = indicatorsContainer.querySelectorAll('button');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    }
+
+    // Show loading overlay while image loads
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(src);
+        img.onerror = () => reject(new Error('Error loading image: ' + src));
+      });
+    }
+
+    async function updatePhoto(index) {
+      try {
+        loadingOverlay.classList.add('active');
+        photoElem.style.opacity = '0';
+        await loadImage(photos[index].src);
+        photoElem.src = photos[index].src;
+        photoElem.alt = `Foto album: ${photos[index].caption}`;
+        captionElem.textContent = photos[index].caption;
+        currentIndex = index;
+        setActiveIndicator(currentIndex);
+        // Smooth fade in
+        setTimeout(() => {
+          photoElem.style.opacity = '1';
+          loadingOverlay.classList.remove('active');
+        }, 100);
+      } catch(error) {
+        loadingOverlay.textContent = 'Gagal memuat gambar';
+        console.error(error);
+        setTimeout(() => {
+          loadingOverlay.classList.remove('active');
+          loadingOverlay.textContent = 'Memuat...';
+        }, 2000);
+      }
+    }
+
+    // Navigation controls
+    function prevPhoto() {
+      const newIndex = (currentIndex - 1 + photos.length) % photos.length;
+      stopSlideshow();
+      updatePhoto(newIndex);
+    }
+
+    function nextPhoto() {
+      const newIndex = (currentIndex + 1) % photos.length;
+      stopSlideshow();
+      updatePhoto(newIndex);
+    }
+
+    prevBtn.addEventListener('click', prevPhoto);
+    nextBtn.addEventListener('click', nextPhoto);
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if(e.target.matches('input, textarea')) return; // ignore inputs
+      if(e.key === 'ArrowLeft') prevPhoto();
+      else if(e.key === 'ArrowRight') nextPhoto();
+    });
+
+    // Slideshow auto play every 8 seconds
+    function startSlideshow() {
+      if(slideshowInterval) return;
+      slideshowPlaying = true;
+      playPauseSlideshowBtn.textContent = 'Jeda Slideshow ▐▐';
+      playPauseSlideshowBtn.setAttribute('aria-label', 'Jeda putar otomatis slideshow');
+      playPauseSlideshowBtn.setAttribute('aria-pressed', 'true');
+      slideshowInterval = setInterval(() => {
+        const nextIndex = (currentIndex + 1) % photos.length;
+        updatePhoto(nextIndex);
+      }, 8000);
+    }
+
+    function stopSlideshow() {
+      if(slideshowInterval) {
+        clearInterval(slideshowInterval);
+        slideshowInterval = null;
+        slideshowPlaying = false;
+        playPauseSlideshowBtn.textContent = 'Putar Slideshow ▶';
+        playPauseSlideshowBtn.setAttribute('aria-label', 'Putar otomatis slideshow');
+        playPauseSlideshowBtn.setAttribute('aria-pressed', 'false');
+      }
+    }
+
+    playPauseSlideshowBtn.addEventListener('click', () => {
+      if(slideshowPlaying) stopSlideshow();
+      else startSlideshow();
+    });
+
+    // Music controls
+    musicToggleBtn.addEventListener('click', () => {
+      if(musicElem.paused) {
+        musicElem.play();
+        musicToggleBtn.textContent = 'Jeda Musik ▐▐';
+        musicToggleBtn.setAttribute('aria-pressed', 'true');
+      } else {
+        musicElem.pause();
+        musicToggleBtn.textContent = 'Putar Musik ▶';
+        musicToggleBtn.setAttribute('aria-pressed', 'false');
+      }
+    });
+
+    // Play music automatically on photo change (optional)
+    /* 
+    function playMusicIfPaused() {
+      if(musicElem.paused) {
+        musicElem.play().catch(e => {
+          // Autoplay might be blocked, ignore error
+          console.warn('Music autoplay blocked by browser.');
+        });
+      }
+    }
+    */
+
+    window.addEventListener('load', () => {
+      createIndicators();
+      updatePhoto(currentIndex);
+      startSlideshow();
+    });
+  </script>
+
+  <!--
+    Cara menggunakan:
+    - Ganti nama file gambar pada array photos dengan gambar milik Anda sendiri, 
+      atau gunakan URL gambar yang valid.
+    - Ganti file musik "cinta-mati-244044.mp3" dengan file musik mp3 Anda sendiri.
+    - Pastikan semua file berada di folder yang sama atau gunakan URL lengkap.
+    - Buka file HTML ini di browser modern untuk melihat dan menikmati album foto dengan musik.
+  -->
+</body>
+</html>
+
